@@ -23,6 +23,8 @@ import android.content.Intent;
 import android.content.ServiceConnection;
 import android.os.Bundle;
 import android.os.IBinder;
+import android.view.MotionEvent;
+import android.view.View;
 
 import com.tapioka.interpreter.R;
 import com.googlecode.android_scripting.Constants;
@@ -31,41 +33,67 @@ import com.googlecode.android_scripting.jsonrpc.RpcReceiverManager;
 
 /**
  * @author Alexey Reznichenko (alexey.reznichenko@gmail.com)
+ * @awthor Takahiro Okada (okada.takahiro111@gmail.com) for ScriptingAccessory
  */
 public class ScriptActivity extends Activity {
 
-  @Override
-  protected void onCreate(Bundle savedInstanceState) {
-    super.onCreate(savedInstanceState);
-    if (Constants.ACTION_LAUNCH_SCRIPT_FOR_RESULT.equals(getIntent().getAction())) {
-      setTheme(android.R.style.Theme_Dialog);
-      setContentView(R.layout.dialog);
-      ServiceConnection connection = new ServiceConnection() {
-        @Override
-        public void onServiceConnected(ComponentName name, IBinder service) {
-          ScriptService scriptService = ((ScriptService.LocalBinder) service).getService();
-          try {
-            RpcReceiverManager manager = scriptService.getRpcReceiverManager();
-            ActivityResultFacade resultFacade = manager.getReceiver(ActivityResultFacade.class);
-            resultFacade.setActivity(ScriptActivity.this);
-          } catch (InterruptedException e) {
-            throw new RuntimeException(e);
-          }
-        }
-
-        @Override
-        public void onServiceDisconnected(ComponentName name) {
-          // Ignore.
-        }
-      };
-      bindService(new Intent(this, ScriptService.class), connection, Context.BIND_AUTO_CREATE);
-      startService(new Intent(this, ScriptService.class));
-    } else {
-      ScriptApplication application = (ScriptApplication) getApplication();
-      if (application.readyToStart()) {
-        startService(new Intent(this, ScriptService.class));
-      }
-      finish();
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.main);
+        findViewById(R.id.start_button).setOnTouchListener(
+                mStartButtonListener);
+        
     }
-  }
+    
+    @Override
+    protected void onResume() {
+        super.onResume();
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+    }
+    
+    View.OnTouchListener mStartButtonListener = new View.OnTouchListener() {
+        @Override
+        public boolean onTouch(View view, MotionEvent motionEvent) {
+            startService();
+            return false;
+        }
+    };
+
+    private void startService(){
+        if (Constants.ACTION_LAUNCH_SCRIPT_FOR_RESULT.equals(getIntent().getAction())) {
+            setTheme(android.R.style.Theme_Dialog);
+            setContentView(R.layout.dialog);
+            ServiceConnection connection = new ServiceConnection() {
+                @Override
+                public void onServiceConnected(ComponentName name, IBinder service) {
+                    ScriptService scriptService = ((ScriptService.LocalBinder) service).getService();
+                    try {
+                        RpcReceiverManager manager = scriptService.getRpcReceiverManager();
+                        ActivityResultFacade resultFacade = manager.getReceiver(ActivityResultFacade.class);
+                        resultFacade.setActivity(ScriptActivity.this);
+                    } catch (InterruptedException e) {
+                        throw new RuntimeException(e);
+                    }
+                }
+
+                @Override
+                public void onServiceDisconnected(ComponentName name) {
+                    // Ignore.
+                }
+            };
+            bindService(new Intent(this, ScriptService.class), connection, Context.BIND_AUTO_CREATE);
+            startService(new Intent(this, ScriptService.class));
+        } else {
+            ScriptApplication application = (ScriptApplication) getApplication();
+            if (application.readyToStart()) {
+                startService(new Intent(this, ScriptService.class));
+            }
+            finish();
+        }
+    }
 }

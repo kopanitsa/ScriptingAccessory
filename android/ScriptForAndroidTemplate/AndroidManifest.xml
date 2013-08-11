@@ -11,8 +11,8 @@
     android:name="com.tapioka.interpreter.ScriptApplication">
     <activity
       android:name="com.tapioka.interpreter.ScriptActivity"
-      android:configChanges="keyboardHidden|orientation"
-      android:theme="@android:style/Theme.Translucent.NoTitleBar">
+      android:configChanges="keyboardHidden|orientation">
+      <!-- android:theme="@android:style/Theme.Translucent.NoTitleBar">  -->
       <intent-filter>
         <action
           android:name="android.intent.action.MAIN" />
