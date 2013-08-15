@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="hello">Hello World!</string>
+    <string name="app_name">Scripting Accessory</string>
+    <string name="loading">Dummy Script loading...</string>
+    <string name="start_button">Start</string>
+
+    <string name="refreshing">Refreshing...</string>
+    <string name="on_btn">ON</string>
+    <string name="off_btn">OFF</string>
+    
+</resources>
