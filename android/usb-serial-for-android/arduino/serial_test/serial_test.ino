@@ -22,16 +22,22 @@
 // Prints an ever-increasing counter, and writes back anything
 // it receives.
 
+#define LED_RED 2
+#define LED_GREEN 3
+
 static int counter = 0;
 void setup() {
+  pinMode(LED_RED, OUTPUT); 
+  pinMode(LED_GREEN, OUTPUT); 
   Serial.begin(115200);
 }
 
 void loop() {
-  Serial.print("Tick #");
+  Serial.print("Tick ***");
   Serial.print(counter++, DEC);
   Serial.print("\n");
 
+/**
   if (Serial.peek() != -1) {
     Serial.print("Read: ");
     do {
@@ -39,5 +45,51 @@ void loop() {
     } while (Serial.peek() != -1);
     Serial.print("\n");
   }
+
+
+  // --- test start @tapioka
+  char command = 0;
+  if (Serial.peek() != -1) {
+    do {
+      command = (char) Serial.read();
+      if (command == 99 || command == 54) {
+        digitalWrite(LED_RED, HIGH);
+        digitalWrite(LED_GREEN, LOW);
+      } else if (command == 100) {
+        digitalWrite(LED_RED, LOW);
+        digitalWrite(LED_GREEN, HIGH);
+      }
+    } while (Serial.peek() != -1);
+  }
+  // --- test end @tapioka
+*/ 
+
+  char command = 0;
+  if (Serial.peek() != -1) {
+    Serial.print("Read: ");
+    do {
+      command = (byte) Serial.read();
+      Serial.print("->");
+      Serial.print(byte(command));
+      Serial.print("<-\n");
+      if (command == (byte)0x01) {
+        digitalWrite(LED_RED, HIGH);
+        digitalWrite(LED_GREEN, LOW);
+      } else if (command == 0x02) {
+        digitalWrite(LED_RED, LOW);
+        digitalWrite(LED_GREEN, HIGH);
+      } else {
+        digitalWrite(LED_RED, HIGH);
+        digitalWrite(LED_GREEN, HIGH);
+      Serial.print("*******");
+      Serial.print(byte(command));
+      Serial.print("*******\n");
+      }
+    } while (Serial.peek() != -1);
+    Serial.print("\n");
+  }
+
+
   delay(1000);
+  
 }

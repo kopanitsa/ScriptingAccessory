@@ -25,6 +25,9 @@ import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.View;
+import android.view.View.OnClickListener;
+import android.widget.Button;
 import android.widget.ScrollView;
 import android.widget.TextView;
 
@@ -92,6 +95,28 @@ public class SerialConsoleActivity extends Activity {
         mTitleTextView = (TextView) findViewById(R.id.demoTitle);
         mDumpTextView = (TextView) findViewById(R.id.consoleText);
         mScrollView = (ScrollView) findViewById(R.id.demoScroller);
+        Button onButton = (Button) findViewById(R.id.on_btn);
+        onButton.setOnClickListener(new OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                byte[] test = {(byte)0x01}; // test send data 
+                if (mSerialIoManager != null) {
+                    Log.e(TAG, "********* on click ON *** *********");
+                    mSerialIoManager.writeAsync(test);
+                }
+            }
+        });
+        Button offButton = (Button) findViewById(R.id.off_btn);
+        offButton.setOnClickListener(new OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                byte[] test = {(byte)0x02}; // test send data 
+                if (mSerialIoManager != null) {
+                    Log.e(TAG, "********* on click OFF xxxx *********");
+                    mSerialIoManager.writeAsync(test);
+                }
+            }
+        });
     }
 
     @Override
@@ -162,6 +187,7 @@ public class SerialConsoleActivity extends Activity {
         mDumpTextView.append(message);
         mScrollView.smoothScrollTo(0, mDumpTextView.getBottom());
     }
+
 
     /**
      * Starts the activity, using the supplied driver instance.
