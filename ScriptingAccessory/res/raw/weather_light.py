@@ -29,7 +29,8 @@ def main():
     print("==== start ====")
     response = get_weather_forecast(tokyo)
     print(response["today_weather"])
-    droid.makeToast(response["description"])
+    droid.dialogCreateAlert("today weather", response["description"])
+    droid.dialogShow()
     print("==== end ====")
 
 if __name__ == '__main__':

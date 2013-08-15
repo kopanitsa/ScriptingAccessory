@@ -120,7 +120,10 @@ public class DeviceListActivity extends Activity {
         View.OnTouchListener startButtonListener = new View.OnTouchListener() {
             @Override
             public boolean onTouch(View view, MotionEvent motionEvent) {
-                startService();
+                if (motionEvent.getAction() == MotionEvent.ACTION_UP){
+                    startService();
+                    return true;
+                }
                 return false;
             }
         };

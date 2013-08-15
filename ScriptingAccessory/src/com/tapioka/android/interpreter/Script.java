@@ -11,8 +11,8 @@ import android.content.res.Resources;
 public class Script {
 
     // load file name is described here
-    public final static int ID = R.raw.script;
-    // public final static int ID = R.raw.weather_light;
+    // public final static int ID = R.raw.script;
+    public final static int ID = R.raw.weather_light;
 
   public static String sFileName;
 
