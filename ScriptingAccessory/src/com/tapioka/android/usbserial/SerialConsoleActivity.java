@@ -37,6 +37,9 @@ import com.hoho.android.usbserial.util.SerialInputOutputManager;
 import com.tapioka.android.R;
 
 import java.io.IOException;
+import java.io.OutputStream;
+import java.io.OutputStreamWriter;
+import java.io.PrintWriter;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -84,6 +87,7 @@ public class SerialConsoleActivity extends Activity {
                 @Override
                 public void run() {
                     SerialConsoleActivity.this.updateReceivedData(data);
+                    SerialConsoleActivity.this.saveReceivedData(data);
                 }
             });
         }
@@ -189,6 +193,24 @@ public class SerialConsoleActivity extends Activity {
         mScrollView.smoothScrollTo(0, mDumpTextView.getBottom());
     }
 
+    private void saveReceivedData(byte[] data) {
+        try{
+            Log.e(TAG, "Opening script.py");
+            OutputStream os = openFileOutput("script.py",MODE_PRIVATE);
+            Log.e(TAG, "Opening output Stream Writer");
+            OutputStreamWriter osw = new OutputStreamWriter(os,"UTF-8");
+            Log.e(TAG, "Opening PrintWriter");
+            PrintWriter pw = new PrintWriter(osw);
+
+            final String stringData = new String(data);
+            pw.print(stringData);
+            pw.close();
+            osw.close();
+            os.close();
+        }catch(IOException e){
+            e.printStackTrace();
+        }
+    }
 
     /**
      * Starts the activity, using the supplied driver instance.
