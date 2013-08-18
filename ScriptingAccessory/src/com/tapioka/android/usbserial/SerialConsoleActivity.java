@@ -21,9 +21,12 @@
 package com.tapioka.android.usbserial;
 
 import android.app.Activity;
+import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
+import android.content.ServiceConnection;
 import android.os.Bundle;
+import android.os.IBinder;
 import android.util.Log;
 import android.view.View;
 import android.view.View.OnClickListener;
@@ -31,10 +34,15 @@ import android.widget.Button;
 import android.widget.ScrollView;
 import android.widget.TextView;
 
+import com.googlecode.android_scripting.Constants;
+import com.googlecode.android_scripting.facade.ActivityResultFacade;
+import com.googlecode.android_scripting.jsonrpc.RpcReceiverManager;
 import com.hoho.android.usbserial.driver.UsbSerialDriver;
 import com.hoho.android.usbserial.util.HexDump;
 import com.hoho.android.usbserial.util.SerialInputOutputManager;
 import com.tapioka.android.R;
+import com.tapioka.android.interpreter.ScriptApplication;
+import com.tapioka.android.interpreter.ScriptService;
 
 import java.io.IOException;
 import java.io.OutputStream;
@@ -87,7 +95,8 @@ public class SerialConsoleActivity extends Activity {
                 @Override
                 public void run() {
                     SerialConsoleActivity.this.updateReceivedData(data);
-                    SerialConsoleActivity.this.saveReceivedData(data);
+//                    SerialConsoleActivity.this.saveReceivedData(data);
+                    SerialConsoleActivity.this.startService();
                 }
             });
         }
@@ -207,6 +216,39 @@ public class SerialConsoleActivity extends Activity {
         }catch(IOException e){
             e.printStackTrace();
         }
+    }
+
+    private void startService(){
+        if (Constants.ACTION_LAUNCH_SCRIPT_FOR_RESULT.equals(getIntent().getAction())) {
+            setTheme(android.R.style.Theme_Dialog);
+            setContentView(R.layout.dialog);
+            ServiceConnection connection = new ServiceConnection() {
+              @Override
+              public void onServiceConnected(ComponentName name, IBinder service) {
+                ScriptService scriptService = ((ScriptService.LocalBinder) service).getService();
+                try {
+                  RpcReceiverManager manager = scriptService.getRpcReceiverManager();
+                  ActivityResultFacade resultFacade = manager.getReceiver(ActivityResultFacade.class);
+                  resultFacade.setActivity(SerialConsoleActivity.this);
+                } catch (InterruptedException e) {
+                  throw new RuntimeException(e);
+                }
+              }
+
+              @Override
+              public void onServiceDisconnected(ComponentName name) {
+                // Ignore.
+              }
+            };
+            bindService(new Intent(this, ScriptService.class), connection, Context.BIND_AUTO_CREATE);
+            startService(new Intent(this, ScriptService.class));
+          } else {
+            ScriptApplication application = (ScriptApplication) getApplication();
+            if (application.readyToStart()) {
+              startService(new Intent(this, ScriptService.class));
+            }
+            finish();
+          }
     }
 
     /**

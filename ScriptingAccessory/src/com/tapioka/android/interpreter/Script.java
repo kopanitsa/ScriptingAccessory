@@ -6,7 +6,7 @@ package com.tapioka.android.interpreter;
 import com.tapioka.android.R;
 
 import android.content.Context;
-import android.content.res.Resources;
+//import android.content.res.Resources;
 
 public class Script {
 
@@ -18,9 +18,12 @@ public class Script {
 
   public static String getFileName(Context context) {
     if (sFileName == null) {
+      sFileName = "script.py";
+      /*
       Resources resources = context.getResources();
       String name = resources.getText(ID).toString();
       sFileName = name.substring(name.lastIndexOf('/') + 1, name.length());
+      */
     }
     return sFileName;
   }
