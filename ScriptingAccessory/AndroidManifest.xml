@@ -30,7 +30,9 @@
             <intent-filter>
                 <action android:name="android.hardware.usb.action.USB_DEVICE_ATTACHED" />
             </intent-filter>
-
+            <intent-filter>
+                <action android:name="com.tapioka.android.usbserial.IO"/>
+            </intent-filter>
             <meta-data
                 android:name="android.hardware.usb.action.USB_DEVICE_ATTACHED"
                 android:resource="@xml/device_filter" />
@@ -39,14 +41,17 @@
         <service android:name="com.tapioka.android.interpreter.ScriptService" />
 
         <activity
-            android:name="com.googlecode.android_scripting.activity.FutureActivity"
-            android:configChanges="keyboardHidden|orientation"
-            android:theme="@android:style/Theme.Translucent" />
-        <activity
             android:name="com.tapioka.android.interpreter.DialogActivity"
             android:configChanges="keyboardHidden|orientation"
             android:theme="@android:style/Theme.Translucent.NoTitleBar" />
-    </application>
+<!--         <receiver android:name="com.tapioka.android.interpreter.TestBroadcastReceiver"
+             android:exported="true">
+            <intent-filter>
+                <action android:name="com.tapioka.android.interpreter.TEST"/>
+            </intent-filter>
+        </receiver>
+ -->
+        </application>
 
     <uses-sdk android:minSdkVersion="7" />
 

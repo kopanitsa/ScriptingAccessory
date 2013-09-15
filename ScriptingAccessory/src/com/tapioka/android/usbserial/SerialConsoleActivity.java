@@ -21,9 +21,11 @@
 package com.tapioka.android.usbserial;
 
 import android.app.Activity;
+import android.content.BroadcastReceiver;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.ServiceConnection;
 import android.os.Bundle;
 import android.os.IBinder;
@@ -33,6 +35,7 @@ import android.view.View.OnClickListener;
 import android.widget.Button;
 import android.widget.ScrollView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.googlecode.android_scripting.Constants;
 import com.googlecode.android_scripting.facade.ActivityResultFacade;
@@ -81,6 +84,9 @@ public class SerialConsoleActivity extends Activity {
 
     private SerialInputOutputManager mSerialIoManager;
 
+    private SerialIoBroadcastReceiver mTestReceiver;
+    private IntentFilter mIntentFilter;
+    
     private final SerialInputOutputManager.Listener mListener =
             new SerialInputOutputManager.Listener() {
 
@@ -131,6 +137,10 @@ public class SerialConsoleActivity extends Activity {
                 }
             }
         });
+        
+        mTestReceiver = new SerialIoBroadcastReceiver();
+        mIntentFilter = new IntentFilter("com.tapioka.android.usbserial.IO");
+        registerReceiver(mTestReceiver, mIntentFilter);
     }
 
     @Override
@@ -145,6 +155,7 @@ public class SerialConsoleActivity extends Activity {
             }
             sDriver = null;
         }
+        unregisterReceiver(mTestReceiver);
         finish();
     }
 
@@ -242,13 +253,18 @@ public class SerialConsoleActivity extends Activity {
             };
             bindService(new Intent(this, ScriptService.class), connection, Context.BIND_AUTO_CREATE);
             startService(new Intent(this, ScriptService.class));
-          } else {
+        } else {
             ScriptApplication application = (ScriptApplication) getApplication();
             if (application.readyToStart()) {
               startService(new Intent(this, ScriptService.class));
             }
-            finish();
-          }
+            //finish(); // TODO
+                        // serviceを起動したあとも、scriptからのintentを受け取ってpythonに命令を投げるために
+                        // finish()しない。ただし、これをやってしまうと、activityが常に全面に出てしまうので、
+                        // ださい。service化したいけど。。
+                        // また、onNewDataが何度も呼ばれるため、何度もserviceが起動されてしまう。
+                        // onNewDataが呼ばれるタイミングを確認し、来たタイミングでstartServiceされないようにする必要あり。
+        }
     }
 
     /**
@@ -264,4 +280,10 @@ public class SerialConsoleActivity extends Activity {
         context.startActivity(intent);
     }
 
+    public class SerialIoBroadcastReceiver extends BroadcastReceiver {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            Toast.makeText(context, "<onReceive> mSerialIoManager = "+mSerialIoManager, Toast.LENGTH_LONG).show();
+        }
+    }    
 }
