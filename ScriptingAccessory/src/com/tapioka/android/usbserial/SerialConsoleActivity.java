@@ -83,6 +83,7 @@ public class SerialConsoleActivity extends Activity {
     private final ExecutorService mExecutor = Executors.newSingleThreadExecutor();
 
     private SerialInputOutputManager mSerialIoManager;
+    private CommandWriter mCommandWriter;
 
     private SerialIoBroadcastReceiver mTestReceiver;
     private IntentFilter mIntentFilter;
@@ -183,6 +184,7 @@ public class SerialConsoleActivity extends Activity {
             mTitleTextView.setText("Serial device: " + sDriver.getClass().getSimpleName());
         }
         onDeviceStateChange();
+        mCommandWriter = new CommandWriter(mSerialIoManager);
     }
 
     private void stopIoManager() {
@@ -283,7 +285,15 @@ public class SerialConsoleActivity extends Activity {
     public class SerialIoBroadcastReceiver extends BroadcastReceiver {
         @Override
         public void onReceive(Context context, Intent intent) {
-            Toast.makeText(context, "<onReceive> mSerialIoManager = "+mSerialIoManager, Toast.LENGTH_LONG).show();
+            Bundle extras = intent.getExtras();
+            if (extras != null){
+                String command = extras.getString("command");
+                String port = extras.getString("port");
+                String value = extras.getString("value");
+                Log.e(TAG, command + "/" + port + "/" + value);
+                Toast.makeText(context, command + "/" + port + "/" + value, Toast.LENGTH_LONG).show();
+                mCommandWriter.write(command,port,value);
+            }
         }
     }    
 }
