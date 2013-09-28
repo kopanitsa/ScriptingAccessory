@@ -47,10 +47,7 @@ import com.tapioka.android.R;
 import com.tapioka.android.interpreter.ScriptApplication;
 import com.tapioka.android.interpreter.ScriptService;
 
-import java.io.FileOutputStream;
-import java.io.FileWriter;
 import java.io.IOException;
-import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 import java.util.concurrent.ExecutorService;
@@ -229,45 +226,19 @@ public class SerialConsoleActivity extends Activity {
         	Log.d(TAG, "Receive EOS");
         	saving = false;
         } else {
-//    		FileWriter filewriter = null;
 	    	PrintWriter pw = null;
 	    	saving = true;
 	        try {
-	        	/*
-	            OutputStream os = openFileOutput("script.py",MODE_PRIVATE);
-	            OutputStreamWriter osw = new OutputStreamWriter(os,"UTF-8");
-	            PrintWriter pw = new PrintWriter(osw);
-	            */
 	            pw = new PrintWriter(
 	            		new OutputStreamWriter(
 	            				openFileOutput("script.py",MODE_APPEND)));
 	
 	            pw.print(stringData);
 	            pw.close();
-	
-	        	/*
-	        	filewriter = new FileWriter("script.py", false);
-	            final String stringData = new String(data);
-	            filewriter.write(stringData);
-	            */
-	
-	            /*
-	            osw.close();
-	            os.close();
-	            */
 	        } catch(IOException e) {
 	            e.printStackTrace();
 	        }
 	        finally {
-	        	/*
-	            if (filewriter != null) {
-	                try {
-	                  filewriter.close();
-	              } catch (IOException e) {
-	                  System.out.println(e);
-	              }
-	            }
-	            */
 	        	if (pw != null) {
 	                pw.close();
 	            }
