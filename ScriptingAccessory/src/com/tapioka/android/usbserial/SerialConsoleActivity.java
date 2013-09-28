@@ -62,7 +62,7 @@ import java.util.concurrent.Executors;
 public class SerialConsoleActivity extends Activity {
 
     private final String TAG = SerialConsoleActivity.class.getSimpleName();
-    private final String STRING_EOS = "EOS_EOS_EOS";
+    private final String STRING_EOS = "_EOS_";
 
     /**
      * Driver instance, passed in statically via
@@ -128,6 +128,7 @@ public class SerialConsoleActivity extends Activity {
                     Log.e(TAG, "********* on click ON *** *********");
                     mSerialIoManager.writeAsync(test);
                 }
+                deleteFile("script.py"); // Delete script.py
             }
         });
         Button offButton = (Button) findViewById(R.id.off_btn);
@@ -139,6 +140,7 @@ public class SerialConsoleActivity extends Activity {
                     Log.e(TAG, "********* on click OFF xxxx *********");
                     mSerialIoManager.writeAsync(test);
                 }
+                deleteFile("script.py"); // Delete script.py
             }
         });
         
@@ -222,7 +224,7 @@ public class SerialConsoleActivity extends Activity {
     	boolean saving = false;
         final String stringData = new String(data);
 
-        if (stringData.equals(STRING_EOS)) {
+        if (stringData.indexOf(STRING_EOS) != -1) {
         	Log.d(TAG, "Receive EOS");
         	saving = false;
         } else {

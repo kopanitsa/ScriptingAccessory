@@ -26,7 +26,7 @@
 #define STATE_WRITE_DONE 2
 #define STATE_READ 3
 
-#define STRING_EOS "EOS_EOS_EOS"
+#define STRING_EOS "#_EOS_EOS_EOS_EOS_EOS_"
 
 static int state = STATE_INIT;
 
