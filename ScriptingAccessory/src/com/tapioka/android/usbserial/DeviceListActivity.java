@@ -74,6 +74,7 @@ public class DeviceListActivity extends Activity {
     private ListView mListView;
     private TextView mProgressBarTitle;
     private ProgressBar mProgressBar;
+    private Activity mActivity = this;
     
     private static final int MESSAGE_REFRESH = 101;
     private static final long REFRESH_TIMEOUT_MILLIS = 5000;
@@ -174,6 +175,7 @@ public class DeviceListActivity extends Activity {
                 }
 
                 showConsoleActivity(driver);
+                // TODO: cannot finish the activity...... Why? mActivity.finish();
             }
         });
         

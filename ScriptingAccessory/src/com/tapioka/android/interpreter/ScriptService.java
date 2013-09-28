@@ -18,10 +18,15 @@ package com.tapioka.android.interpreter;
 
 import android.app.Notification;
 import android.app.PendingIntent;
+import android.content.BroadcastReceiver;
+import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.res.Resources;
 import android.os.Binder;
+import android.os.Bundle;
 import android.os.IBinder;
+import android.widget.Toast;
 
 import com.googlecode.android_scripting.AndroidProxy;
 import com.googlecode.android_scripting.BaseApplication;
@@ -39,6 +44,8 @@ import com.googlecode.android_scripting.interpreter.html.HtmlActivityTask;
 import com.googlecode.android_scripting.interpreter.html.HtmlInterpreter;
 import com.googlecode.android_scripting.jsonrpc.RpcReceiverManager;
 import com.tapioka.android.R;
+import com.tapioka.android.usbserial.CommandWriter;
+import com.tapioka.android.usbserial.SerialConsoleActivity.SerialIoBroadcastReceiver;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -59,6 +66,12 @@ public class ScriptService extends ForegroundService {
 	private InterpreterConfiguration mInterpreterConfiguration;
 	private RpcReceiverManager mFacadeManager;
     private AndroidProxy mProxy;
+    
+    //To receive intent from script
+    private SerialIoBroadcastReceiver mTestReceiver;
+    private IntentFilter mIntentFilter;
+
+    private CommandWriter mCommandWriter;
     
 	public class LocalBinder extends Binder {
 		public ScriptService getService() {
@@ -135,7 +148,37 @@ public class ScriptService extends ForegroundService {
 						}
 					});
 		}
+		
+		// register broadcast intent receiver
+        mTestReceiver = new SerialIoBroadcastReceiver();
+        mIntentFilter = new IntentFilter("com.tapioka.android.usbserial.IO");
+        registerReceiver(mTestReceiver, mIntentFilter);
 	}
+	
+    @Override
+    public void onDestroy() {
+        unregisterReceiver(mTestReceiver);
+        super.onDestroy();
+    }
+
+
+
+    public class SerialIoBroadcastReceiver extends BroadcastReceiver {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            Bundle extras = intent.getExtras();
+            if (extras != null){
+                String command = extras.getString("command");
+                String port = extras.getString("port");
+                String value = extras.getString("value");
+                Toast.makeText(context, "[SERVICE2]" + command + "/" + port + "/" + value, Toast.LENGTH_LONG).show();
+                if (mCommandWriter != null) {
+                    mCommandWriter.write(command,port,value);
+                }
+            }
+        }
+    }    
+
 
 	public RpcReceiverManager getRpcReceiverManager() throws InterruptedException {
 		mLatch.await();
@@ -215,4 +258,9 @@ public class ScriptService extends ForegroundService {
 			}
 		}
 	}
+
+    
+	public void setCommandWriter(CommandWriter commandWriter) {
+	    mCommandWriter = commandWriter;
+    }
 }

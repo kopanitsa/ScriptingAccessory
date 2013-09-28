@@ -21,6 +21,7 @@ public class CommandWriter {
 
     public void write(String command, String port, String value){
         Log.e(TAG,command + ":" + port + ":" + value);
+        // need consider 
         if ("digitalWrite".equals(command)){
             if ("high".equals(value)){
                 byte[] b = {DIGITAL_WRITE, HIGH};
@@ -40,4 +41,12 @@ public class CommandWriter {
             Log.e(TAG,"ERROR!!!" + command + ":" + port + ":" + value);
         }
     }
+
+    // TODO
+    public void writeRaw(String command){
+//        stringtobyte
+//        mSerialIoManager.writeAsync(command);
+    }
+
+
 }

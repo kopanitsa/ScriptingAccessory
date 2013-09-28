@@ -147,15 +147,16 @@ public class SerialConsoleActivity extends Activity {
     @Override
     protected void onPause() {
         super.onPause();
-        stopIoManager();
-        if (sDriver != null) {
-            try {
-                sDriver.close();
-            } catch (IOException e) {
-                // Ignore.
-            }
-            sDriver = null;
-        }
+// TODO
+//        stopIoManager();
+//        if (sDriver != null) {
+//            try {
+//                sDriver.close();
+//            } catch (IOException e) {
+//                // Ignore.
+//            }
+//            sDriver = null;
+//        }
         unregisterReceiver(mTestReceiver);
         finish();
     }
@@ -258,14 +259,22 @@ public class SerialConsoleActivity extends Activity {
         } else {
             ScriptApplication application = (ScriptApplication) getApplication();
             if (application.readyToStart()) {
-              startService(new Intent(this, ScriptService.class));
+                ServiceConnection connection = new ServiceConnection() {
+                    @Override
+                    public void onServiceConnected(ComponentName name, IBinder service) {
+                        ScriptService scriptService = ((ScriptService.LocalBinder) service).getService();
+                        scriptService.setCommandWriter(mCommandWriter);
+                    }
+
+                    @Override
+                    public void onServiceDisconnected(ComponentName name) {
+                        // Ignore.
+                    }
+                };
+                bindService(new Intent(this, ScriptService.class), connection, Context.BIND_AUTO_CREATE);
+                startService(new Intent(this, ScriptService.class));
             }
-            //finish(); // TODO
-                        // serviceを起動したあとも、scriptからのintentを受け取ってpythonに命令を投げるために
-                        // finish()しない。ただし、これをやってしまうと、activityが常に全面に出てしまうので、
-                        // ださい。service化したいけど。。
-                        // また、onNewDataが何度も呼ばれるため、何度もserviceが起動されてしまう。
-                        // onNewDataが呼ばれるタイミングを確認し、来たタイミングでstartServiceされないようにする必要あり。
+            finish();
         }
     }
 

@@ -38,7 +38,11 @@
                 android:resource="@xml/device_filter" />
         </activity>
 
-        <service android:name="com.tapioka.android.interpreter.ScriptService" />
+        <service android:name="com.tapioka.android.interpreter.ScriptService">
+            <intent-filter>
+                <action android:name="com.tapioka.android.usbserial.IO"/>
+            </intent-filter>
+        </service>
 
         <activity
             android:name="com.tapioka.android.interpreter.DialogActivity"
