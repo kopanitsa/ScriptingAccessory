@@ -47,6 +47,8 @@ import com.tapioka.android.R;
 import com.tapioka.android.interpreter.ScriptApplication;
 import com.tapioka.android.interpreter.ScriptService;
 
+import java.io.FileOutputStream;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
@@ -63,6 +65,7 @@ import java.util.concurrent.Executors;
 public class SerialConsoleActivity extends Activity {
 
     private final String TAG = SerialConsoleActivity.class.getSimpleName();
+    private final String STRING_EOS = "EOS_EOS_EOS";
 
     /**
      * Driver instance, passed in statically via
@@ -101,9 +104,11 @@ public class SerialConsoleActivity extends Activity {
             SerialConsoleActivity.this.runOnUiThread(new Runnable() {
                 @Override
                 public void run() {
+                    Log.v(TAG, HexDump.dumpHexString(data));
                     SerialConsoleActivity.this.updateReceivedData(data);
-//                    SerialConsoleActivity.this.saveReceivedData(data);
-                    SerialConsoleActivity.this.startService();
+                    if (!SerialConsoleActivity.this.saveReceivedData(data)) {
+                    	SerialConsoleActivity.this.startService();
+                    }
                 }
             });
         }
@@ -116,6 +121,7 @@ public class SerialConsoleActivity extends Activity {
         mTitleTextView = (TextView) findViewById(R.id.demoTitle);
         mDumpTextView = (TextView) findViewById(R.id.consoleText);
         mScrollView = (ScrollView) findViewById(R.id.demoScroller);
+        deleteFile("script.py"); // Delete script.py
         Button onButton = (Button) findViewById(R.id.on_btn);
         onButton.setOnClickListener(new OnClickListener() {
             @Override
@@ -215,20 +221,59 @@ public class SerialConsoleActivity extends Activity {
         mScrollView.smoothScrollTo(0, mDumpTextView.getBottom());
     }
 
-    private void saveReceivedData(byte[] data) {
-        try{
-            OutputStream os = openFileOutput("script.py",MODE_PRIVATE);
-            OutputStreamWriter osw = new OutputStreamWriter(os,"UTF-8");
-            PrintWriter pw = new PrintWriter(osw);
+    private boolean saveReceivedData(byte[] data) {
+    	boolean saving = false;
+        final String stringData = new String(data);
 
-            final String stringData = new String(data);
-            pw.print(stringData);
-            pw.close();
-            osw.close();
-            os.close();
-        }catch(IOException e){
-            e.printStackTrace();
+        if (stringData.equals(STRING_EOS)) {
+        	Log.d(TAG, "Receive EOS");
+        	saving = false;
+        } else {
+//    		FileWriter filewriter = null;
+	    	PrintWriter pw = null;
+	    	saving = true;
+	        try {
+	        	/*
+	            OutputStream os = openFileOutput("script.py",MODE_PRIVATE);
+	            OutputStreamWriter osw = new OutputStreamWriter(os,"UTF-8");
+	            PrintWriter pw = new PrintWriter(osw);
+	            */
+	            pw = new PrintWriter(
+	            		new OutputStreamWriter(
+	            				openFileOutput("script.py",MODE_APPEND)));
+	
+	            pw.print(stringData);
+	            pw.close();
+	
+	        	/*
+	        	filewriter = new FileWriter("script.py", false);
+	            final String stringData = new String(data);
+	            filewriter.write(stringData);
+	            */
+	
+	            /*
+	            osw.close();
+	            os.close();
+	            */
+	        } catch(IOException e) {
+	            e.printStackTrace();
+	        }
+	        finally {
+	        	/*
+	            if (filewriter != null) {
+	                try {
+	                  filewriter.close();
+	              } catch (IOException e) {
+	                  System.out.println(e);
+	              }
+	            }
+	            */
+	        	if (pw != null) {
+	                pw.close();
+	            }
+	        }
         }
+        return saving;
     }
 
     private void startService(){
@@ -261,11 +306,11 @@ public class SerialConsoleActivity extends Activity {
               startService(new Intent(this, ScriptService.class));
             }
             //finish(); // TODO
-                        // serviceã‚’èµ·å‹•ã—ãŸã‚ã¨ã‚‚ã€scriptã‹ã‚‰ã®intentã‚’å—ã‘å–ã£ã¦pythonã«å‘½ä»¤ã‚’æŠ•ã’ã‚‹ãŸã‚ã«
-                        // finish()ã—ãªã„ã€‚ãŸã ã—ã€ã“ã‚Œã‚’ã‚„ã£ã¦ã—ã¾ã†ã¨ã€activityãŒå¸¸ã«å…¨é¢ã«å‡ºã¦ã—ã¾ã†ã®ã§ã€
-                        // ã ã•ã„ã€‚serviceåŒ–ã—ãŸã„ã‘ã©ã€‚ã€‚
-                        // ã¾ãŸã€onNewDataãŒä½•åº¦ã‚‚å‘¼ã°ã‚Œã‚‹ãŸã‚ã€ä½•åº¦ã‚‚serviceãŒèµ·å‹•ã•ã‚Œã¦ã—ã¾ã†ã€‚
-                        // onNewDataãŒå‘¼ã°ã‚Œã‚‹ã‚¿ã‚¤ãƒŸãƒ³ã‚°ã‚’ç¢ºèªã—ã€æ¥ãŸã‚¿ã‚¤ãƒŸãƒ³ã‚°ã§startServiceã•ã‚Œãªã„ã‚ˆã†ã«ã™ã‚‹å¿…è¦ã‚ã‚Šã€‚
+                        // service‚ğ‹N“®‚µ‚½‚ ‚Æ‚àAscript‚©‚ç‚Ìintent‚ğó‚¯æ‚Á‚Äpython‚É–½—ß‚ğ“Š‚°‚é‚½‚ß‚É
+                        // finish()‚µ‚È‚¢B‚½‚¾‚µA‚±‚ê‚ğ‚â‚Á‚Ä‚µ‚Ü‚¤‚ÆAactivity‚ªí‚É‘S–Ê‚Éo‚Ä‚µ‚Ü‚¤‚Ì‚ÅA
+                        // ‚¾‚³‚¢Bservice‰»‚µ‚½‚¢‚¯‚ÇBB
+                        // ‚Ü‚½AonNewData‚ª‰½“x‚àŒÄ‚Î‚ê‚é‚½‚ßA‰½“x‚àservice‚ª‹N“®‚³‚ê‚Ä‚µ‚Ü‚¤B
+                        // onNewData‚ªŒÄ‚Î‚ê‚éƒ^ƒCƒ~ƒ“ƒO‚ğŠm”F‚µA—ˆ‚½ƒ^ƒCƒ~ƒ“ƒO‚ÅstartService‚³‚ê‚È‚¢‚æ‚¤‚É‚·‚é•K—v‚ ‚ ‚èB
         }
     }
 

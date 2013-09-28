@@ -18,8 +18,8 @@ public class Script {
 
   public static String getFileName(Context context) {
     if (sFileName == null) {
-      sFileName = "intent_test.py";
-      //sFileName = "script.py";
+//      sFileName = "intent_test.py";
+      sFileName = "script.py";
       /*
       Resources resources = context.getResources();
       String name = resources.getText(ID).toString();
