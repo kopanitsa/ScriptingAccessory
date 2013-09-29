@@ -24,10 +24,12 @@ public class CommandWriter {
         // need consider 
         if ("digitalWrite".equals(command)){
             if ("high".equals(value)){
-                byte[] b = {DIGITAL_WRITE, HIGH};
+                //byte[] b = {DIGITAL_WRITE, HIGH};
+                byte[] b = {(byte)0x01};
                 mSerialIoManager.writeAsync(b);
             } else if ("low".equals(value)){
-                byte[] b = {DIGITAL_WRITE, LOW};
+                //byte[] b = {DIGITAL_WRITE, LOW};
+                byte[] b = {(byte)0x02};
                 mSerialIoManager.writeAsync(b);
             }
         } else if ("digitalRead".equals(command)){
