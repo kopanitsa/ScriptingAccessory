@@ -21,9 +21,17 @@
 // Sample Arduino sketch for use with usb-serial-for-android.
 // Prints an ever-increasing counter, and writes back anything
 // it receives.
-
 #define LED_RED 2
 #define LED_GREEN 3
+
+#define STATE_INIT 0
+#define STATE_WRITE 1
+#define STATE_WRITE_DONE 2
+#define STATE_READ 3
+
+#define STRING_EOS "#_EOS_EOS_EOS_EOS_EOS_"
+
+static int state = STATE_INIT;
 
 static int counter = 0;
 void setup() {
@@ -33,37 +41,40 @@ void setup() {
 }
 
 void loop() {
-  Serial.print("Tick ***");
-  Serial.print(counter++, DEC);
-  Serial.print("\n");
+  handleState();
+  handleAndroidSignal();
 
-/**
-  if (Serial.peek() != -1) {
-    Serial.print("Read: ");
-    do {
-      Serial.print((char) Serial.read());
-    } while (Serial.peek() != -1);
-    Serial.print("\n");
-  }
+  delay(300);
+}
 
-
-  // --- test start @tapioka
-  char command = 0;
-  if (Serial.peek() != -1) {
-    do {
-      command = (char) Serial.read();
-      if (command == 99 || command == 54) {
-        digitalWrite(LED_RED, HIGH);
-        digitalWrite(LED_GREEN, LOW);
-      } else if (command == 100) {
-        digitalWrite(LED_RED, LOW);
-        digitalWrite(LED_GREEN, HIGH);
+void handleState(){
+  switch (state) {
+    case STATE_INIT:
+      if (Serial.peek() != -1) {
+        state = STATE_WRITE;
       }
-    } while (Serial.peek() != -1);
-  }
-  // --- test end @tapioka
-*/ 
+      break;
 
+    case STATE_WRITE:
+      Serial.println("import android,time");
+      Serial.println("droid = android.Android()");
+      Serial.println("droid.makeToast('Hello, digital io!')");
+
+      state = STATE_WRITE_DONE;
+      break;
+
+    case STATE_WRITE_DONE:
+     Serial.print(STRING_EOS);
+
+      state = STATE_READ;
+
+    case STATE_READ:
+    default:
+    break;
+  }
+}
+
+void handleAndroidSignal(){
   char command = 0;
   if (Serial.peek() != -1) {
     Serial.print("Read: ");
@@ -88,8 +99,4 @@ void loop() {
     } while (Serial.peek() != -1);
     Serial.print("\n");
   }
-
-
-  delay(1000);
-  
 }
