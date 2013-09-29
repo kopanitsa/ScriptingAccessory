@@ -48,7 +48,6 @@ import com.tapioka.android.interpreter.ScriptApplication;
 import com.tapioka.android.interpreter.ScriptService;
 
 import java.io.IOException;
-import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 import java.util.concurrent.ExecutorService;
@@ -63,6 +62,7 @@ import java.util.concurrent.Executors;
 public class SerialConsoleActivity extends Activity {
 
     private final String TAG = SerialConsoleActivity.class.getSimpleName();
+    private final String STRING_EOS = "_EOS_";
 
     /**
      * Driver instance, passed in statically via
@@ -101,9 +101,11 @@ public class SerialConsoleActivity extends Activity {
             SerialConsoleActivity.this.runOnUiThread(new Runnable() {
                 @Override
                 public void run() {
+                    Log.v(TAG, HexDump.dumpHexString(data));
                     SerialConsoleActivity.this.updateReceivedData(data);
-//                    SerialConsoleActivity.this.saveReceivedData(data);
-                    SerialConsoleActivity.this.startService();
+                    if (!SerialConsoleActivity.this.saveReceivedData(data)) {
+                    	SerialConsoleActivity.this.startService();
+                    }
                 }
             });
         }
@@ -116,6 +118,7 @@ public class SerialConsoleActivity extends Activity {
         mTitleTextView = (TextView) findViewById(R.id.demoTitle);
         mDumpTextView = (TextView) findViewById(R.id.consoleText);
         mScrollView = (ScrollView) findViewById(R.id.demoScroller);
+        deleteFile("script.py"); // Delete script.py
         Button onButton = (Button) findViewById(R.id.on_btn);
         onButton.setOnClickListener(new OnClickListener() {
             @Override
@@ -125,6 +128,7 @@ public class SerialConsoleActivity extends Activity {
                     Log.e(TAG, "********* on click ON *** *********");
                     mSerialIoManager.writeAsync(test);
                 }
+                deleteFile("script.py"); // Delete script.py
             }
         });
         Button offButton = (Button) findViewById(R.id.off_btn);
@@ -136,6 +140,7 @@ public class SerialConsoleActivity extends Activity {
                     Log.e(TAG, "********* on click OFF xxxx *********");
                     mSerialIoManager.writeAsync(test);
                 }
+                deleteFile("script.py"); // Delete script.py
             }
         });
         
@@ -216,20 +221,33 @@ public class SerialConsoleActivity extends Activity {
         mScrollView.smoothScrollTo(0, mDumpTextView.getBottom());
     }
 
-    private void saveReceivedData(byte[] data) {
-        try{
-            OutputStream os = openFileOutput("script.py",MODE_PRIVATE);
-            OutputStreamWriter osw = new OutputStreamWriter(os,"UTF-8");
-            PrintWriter pw = new PrintWriter(osw);
+    private boolean saveReceivedData(byte[] data) {
+    	boolean saving = false;
+        final String stringData = new String(data);
 
-            final String stringData = new String(data);
-            pw.print(stringData);
-            pw.close();
-            osw.close();
-            os.close();
-        }catch(IOException e){
-            e.printStackTrace();
+        if (stringData.indexOf(STRING_EOS) != -1) {
+        	Log.d(TAG, "Receive EOS");
+        	saving = false;
+        } else {
+	    	PrintWriter pw = null;
+	    	saving = true;
+	        try {
+	            pw = new PrintWriter(
+	            		new OutputStreamWriter(
+	            				openFileOutput("script.py",MODE_APPEND)));
+	
+	            pw.print(stringData);
+	            pw.close();
+	        } catch(IOException e) {
+	            e.printStackTrace();
+	        }
+	        finally {
+	        	if (pw != null) {
+	                pw.close();
+	            }
+	        }
         }
+        return saving;
     }
 
     private void startService(){
