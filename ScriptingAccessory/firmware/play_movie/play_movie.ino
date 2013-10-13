@@ -37,7 +37,7 @@ void setup() {
 void loop() {
   switch (state) {
     case STATE_INIT:
-      if (Serial.peek() != -1) {
+      if (Serial.peek() != 0xFF) {
         state = STATE_WRITE;
       }
       break;
