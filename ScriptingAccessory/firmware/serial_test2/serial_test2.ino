@@ -27,6 +27,7 @@
 #define STATE_READ 3
 
 #define STRING_EOS "#_EOS_EOS_EOS_EOS_EOS_"
+#define COMMAND_START_TO_LOAD 0xFF
 
 static int state = STATE_INIT;
 
@@ -37,7 +38,8 @@ void setup() {
 void loop() {
   switch (state) {
     case STATE_INIT:
-      if (Serial.peek() != -1) {
+      //if (Serial.peek() != -1 ) {
+      if (Serial.peek() == 0xFF ) {
         state = STATE_WRITE;
       }
       break;
@@ -45,7 +47,7 @@ void loop() {
     case STATE_WRITE:
       Serial.println("import android,time");
       Serial.println("droid = android.Android()");
-      Serial.println("droid.makeToast('Hello, digital io!')");
+      Serial.println("droid.makeToast('Hello, digital io2!')");
 
       state = STATE_WRITE_DONE;
       break;

@@ -5,6 +5,8 @@ import android.util.Log;
 import com.hoho.android.usbserial.util.SerialInputOutputManager;
 
 public class CommandWriter {
+    public static final byte START_TO_SEND_SCRIPT = (byte)0xFF;
+
     private static final byte DIGITAL_WRITE = (byte)0x01;
     private static final byte DIGITAL_READ  = (byte)0x02;
     private static final byte ANALOG_WRITE  = (byte)0x03;

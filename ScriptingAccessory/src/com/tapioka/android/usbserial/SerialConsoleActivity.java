@@ -123,9 +123,9 @@ public class SerialConsoleActivity extends Activity {
         onButton.setOnClickListener(new OnClickListener() {
             @Override
             public void onClick(View v) {
-                byte[] test = {(byte)0x01}; // test send data 
+                byte[] test = {(byte)0xFF}; // test send data 
                 if (mSerialIoManager != null) {
-                    Log.e(TAG, "********* on click ON *** *********");
+                    Log.d(TAG, "on click ON");
                     mSerialIoManager.writeAsync(test);
                 }
                 deleteFile("script.py"); // Delete script.py
@@ -137,7 +137,7 @@ public class SerialConsoleActivity extends Activity {
             public void onClick(View v) {
                 byte[] test = {(byte)0x02}; // test send data 
                 if (mSerialIoManager != null) {
-                    Log.e(TAG, "********* on click OFF xxxx *********");
+                    Log.d(TAG, "on click OFF");
                     mSerialIoManager.writeAsync(test);
                 }
                 deleteFile("script.py"); // Delete script.py
@@ -191,6 +191,11 @@ public class SerialConsoleActivity extends Activity {
         }
         onDeviceStateChange();
         mCommandWriter = new CommandWriter(mSerialIoManager);
+        
+        // send start command to Arduino.
+        // When Arduino get the command (serial_test2.ino), Arduino start to send script.
+        byte[] start = {CommandWriter.START_TO_SEND_SCRIPT};
+        mSerialIoManager.writeAsync(start);
     }
 
     private void stopIoManager() {
