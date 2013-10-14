@@ -27,6 +27,7 @@
 #define STATE_READ 3
 
 #define STRING_EOS "#_EOS_EOS_EOS_EOS_EOS_"
+#define COMMAND_START_TO_LOAD 0xFF
 
 static int state = STATE_INIT;
 
@@ -37,7 +38,8 @@ void setup() {
 void loop() {
   switch (state) {
     case STATE_INIT:
-      if (Serial.peek() != 0xFF) {
+      //if (Serial.peek() != -1 ) {
+      if (Serial.peek() == 0xFF ) {
         state = STATE_WRITE;
       }
       break;
@@ -46,13 +48,15 @@ void loop() {
       Serial.println("import android,time");
       Serial.println("droid = android.Android()");
       Serial.println("droid.makeToast('Play Movie')");
-      Serial.println("droid.webViewShow(\"https://docs.google.com/file/d/0B14PZnE7DkYmck9Yc2tlcTZwTnM/edit?usp=sharing\")");
+      Serial.println("droid.webViewShow('http://www.youtube.com/watch?v=pdbSLpBgQ2I', True)");
+      //Serial.println("droid.webViewShow('https://docs.google.com/file/d/0B14PZnE7DkYmck9Yc2tlcTZwTnM/edit?usp=sharing', True)");
 
       state = STATE_WRITE_DONE;
       break;
 
     case STATE_WRITE_DONE:
-      Serial.print(STRING_EOS);
+//     delay(5000);
+     Serial.print(STRING_EOS);
 
       state = STATE_READ;
 
