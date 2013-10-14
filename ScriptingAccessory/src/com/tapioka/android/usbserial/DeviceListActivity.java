@@ -180,7 +180,7 @@ public class DeviceListActivity extends Activity {
         });
         
     }
-
+    
     @Override
     protected void onResume() {
         super.onResume();
@@ -213,6 +213,8 @@ public class DeviceListActivity extends Activity {
                         for (UsbSerialDriver driver : drivers) {
                             Log.d(TAG, "  + " + driver);
                             result.add(new DeviceEntry(device, driver));
+                            // start to load script automatically when Android find Arduino.
+                            startConnectionIfAvailable(driver);
                         }
                     }
                 }
@@ -228,6 +230,14 @@ public class DeviceListActivity extends Activity {
                         String.format("%s device(s) found",Integer.valueOf(mEntries.size())));
                 hideProgressBar();
                 Log.d(TAG, "Done refreshing, " + mEntries.size() + " entries found.");
+            }
+
+            // start to load script automatically when Android find arduino.
+            private void startConnectionIfAvailable(UsbSerialDriver driver){
+                if (driver.getClass().getSimpleName() != null){
+                    showConsoleActivity(driver);
+                    finish();
+                }
             }
 
         }.execute((Void) null);

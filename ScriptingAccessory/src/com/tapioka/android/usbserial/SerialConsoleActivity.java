@@ -146,6 +146,8 @@ public class SerialConsoleActivity extends Activity {
 //                    deleteFile("script.py"); // Delete script.py
 //                }
 //            });
+        } else {
+            deleteFile("script.py"); // Delete script.py
         }
         mTestReceiver = new SerialIoBroadcastReceiver();
         mIntentFilter = new IntentFilter("com.tapioka.android.usbserial.IO");
