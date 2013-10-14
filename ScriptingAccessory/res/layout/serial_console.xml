@@ -3,7 +3,10 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical" >
-
+    <!-- For DEBUG UI. if you want to debug serial I/O, please comment out, 
+         and set true to SerialConsoleActivity#DEBUG_UI.
+    -->
+    <!--
     <TextView
         android:id="@+id/demoTitle"
         android:layout_width="match_parent"
@@ -49,5 +52,5 @@
             android:layout_height="wrap_content"
             android:typeface="monospace" />
     </ScrollView>
-
+    -->
 </LinearLayout>

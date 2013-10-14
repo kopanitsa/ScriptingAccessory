@@ -62,6 +62,7 @@ import java.util.concurrent.Executors;
 public class SerialConsoleActivity extends Activity {
 
     private final String TAG = SerialConsoleActivity.class.getSimpleName();
+    private final boolean DEBUG_UI = false;
     private final String STRING_EOS = "_EOS_";
 
     /**
@@ -76,6 +77,7 @@ public class SerialConsoleActivity extends Activity {
      */
     private static UsbSerialDriver sDriver = null;
 
+    // for debug UI
     private TextView mTitleTextView;
     private TextView mDumpTextView;
     private ScrollView mScrollView;
@@ -115,35 +117,36 @@ public class SerialConsoleActivity extends Activity {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.serial_console);
-        mTitleTextView = (TextView) findViewById(R.id.demoTitle);
-        mDumpTextView = (TextView) findViewById(R.id.consoleText);
-        mScrollView = (ScrollView) findViewById(R.id.demoScroller);
-        deleteFile("script.py"); // Delete script.py
-        Button onButton = (Button) findViewById(R.id.on_btn);
-        onButton.setOnClickListener(new OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                byte[] test = {(byte)0xFF}; // test send data 
-                if (mSerialIoManager != null) {
-                    Log.d(TAG, "on click ON");
-                    mSerialIoManager.writeAsync(test);
-                }
-                deleteFile("script.py"); // Delete script.py
-            }
-        });
-        Button offButton = (Button) findViewById(R.id.off_btn);
-        offButton.setOnClickListener(new OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                byte[] test = {(byte)0x02}; // test send data 
-                if (mSerialIoManager != null) {
-                    Log.d(TAG, "on click OFF");
-                    mSerialIoManager.writeAsync(test);
-                }
-                deleteFile("script.py"); // Delete script.py
-            }
-        });
-        
+        if (DEBUG_UI){
+//            mTitleTextView = (TextView) findViewById(R.id.demoTitle);
+//            mDumpTextView = (TextView) findViewById(R.id.consoleText);
+//            mScrollView = (ScrollView) findViewById(R.id.demoScroller);
+//            deleteFile("script.py"); // Delete script.py
+//            Button onButton = (Button) findViewById(R.id.on_btn);
+//            onButton.setOnClickListener(new OnClickListener() {
+//                @Override
+//                public void onClick(View v) {
+//                    byte[] test = {(byte)0xFF}; // test send data 
+//                    if (mSerialIoManager != null) {
+//                        Log.d(TAG, "on click ON");
+//                        mSerialIoManager.writeAsync(test);
+//                    }
+//                    deleteFile("script.py"); // Delete script.py
+//                }
+//            });
+//            Button offButton = (Button) findViewById(R.id.off_btn);
+//            offButton.setOnClickListener(new OnClickListener() {
+//                @Override
+//                public void onClick(View v) {
+//                    byte[] test = {(byte)0x02}; // test send data 
+//                    if (mSerialIoManager != null) {
+//                        Log.d(TAG, "on click OFF");
+//                        mSerialIoManager.writeAsync(test);
+//                    }
+//                    deleteFile("script.py"); // Delete script.py
+//                }
+//            });
+        }
         mTestReceiver = new SerialIoBroadcastReceiver();
         mIntentFilter = new IntentFilter("com.tapioka.android.usbserial.IO");
         registerReceiver(mTestReceiver, mIntentFilter);
@@ -171,14 +174,18 @@ public class SerialConsoleActivity extends Activity {
         super.onResume();
         Log.d(TAG, "Resumed, sDriver=" + sDriver);
         if (sDriver == null) {
-            mTitleTextView.setText("No serial device.");
+            if (DEBUG_UI){
+                mTitleTextView.setText("No serial device.");
+            }
         } else {
             try {
                 sDriver.open();
                 sDriver.setParameters(115200, 8, UsbSerialDriver.STOPBITS_1, UsbSerialDriver.PARITY_NONE);
             } catch (IOException e) {
                 Log.e(TAG, "Error setting up device: " + e.getMessage(), e);
-                mTitleTextView.setText("Error opening device: " + e.getMessage());
+                if (DEBUG_UI){
+                    mTitleTextView.setText("Error opening device: " + e.getMessage());
+                }
                 try {
                     sDriver.close();
                 } catch (IOException e2) {
@@ -187,7 +194,9 @@ public class SerialConsoleActivity extends Activity {
                 sDriver = null;
                 return;
             }
-            mTitleTextView.setText("Serial device: " + sDriver.getClass().getSimpleName());
+            if (DEBUG_UI){
+                mTitleTextView.setText("Serial device: " + sDriver.getClass().getSimpleName());
+            }
         }
         onDeviceStateChange();
         mCommandWriter = new CommandWriter(mSerialIoManager);
@@ -220,10 +229,12 @@ public class SerialConsoleActivity extends Activity {
     }
 
     private void updateReceivedData(byte[] data) {
-        final String message = "Read " + data.length + " bytes: \n"
-                + HexDump.dumpHexString(data) + "\n\n";
-        mDumpTextView.append(message);
-        mScrollView.smoothScrollTo(0, mDumpTextView.getBottom());
+        if (DEBUG_UI) {
+            final String message = "Read " + data.length + " bytes: \n"
+                    + HexDump.dumpHexString(data) + "\n\n";
+            mDumpTextView.append(message);
+            mScrollView.smoothScrollTo(0, mDumpTextView.getBottom());
+        }
     }
 
     private boolean saveReceivedData(byte[] data) {
