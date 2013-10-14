@@ -40,7 +40,7 @@
         android:layout_below="@+id/progressBar"
         android:layout_centerHorizontal="true"
         android:background="#eeeeee" />
-
+    <!-- 
     <ListView
         android:id="@+id/deviceList"
         android:layout_width="match_parent"
@@ -55,5 +55,5 @@
         android:layout_alignParentBottom="true"
         android:layout_alignParentLeft="true"
         android:text="@string/start_button" />
-
+     -->
 </RelativeLayout>

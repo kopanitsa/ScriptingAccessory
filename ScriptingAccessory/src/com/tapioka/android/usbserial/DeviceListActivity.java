@@ -70,6 +70,7 @@ import java.util.List;
 public class DeviceListActivity extends Activity {
 
     private final String TAG = DeviceListActivity.class.getSimpleName();
+    private final boolean DEBUG_UI = false;
 
     private UsbManager mUsbManager;
     private ListView mListView;
@@ -115,7 +116,8 @@ public class DeviceListActivity extends Activity {
         setContentView(R.layout.main);
 
         mUsbManager = (UsbManager) getSystemService(Context.USB_SERVICE);
-        mListView = (ListView) findViewById(R.id.deviceList);
+        // DEBUG_UI
+        //mListView = (ListView) findViewById(R.id.deviceList);
         mProgressBar = (ProgressBar) findViewById(R.id.progressBar);
         mProgressBarTitle = (TextView) findViewById(R.id.progressBarTitle);
         View.OnTouchListener startButtonListener = new View.OnTouchListener() {
@@ -128,7 +130,8 @@ public class DeviceListActivity extends Activity {
                 return false;
             }
         };
-        findViewById(R.id.start_button).setOnTouchListener(startButtonListener);
+        // DEBUG_UI
+        //findViewById(R.id.start_button).setOnTouchListener(startButtonListener);
 
         mAdapter = new ArrayAdapter<DeviceEntry>(this, android.R.layout.simple_expandable_list_item_2, mEntries) {
             @Override
@@ -156,28 +159,30 @@ public class DeviceListActivity extends Activity {
             }
 
         };
-        mListView.setAdapter(mAdapter);
-
-        mListView.setOnItemClickListener(new ListView.OnItemClickListener() {
-            @Override
-            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                Log.d(TAG, "Pressed item " + position);
-                if (position >= mEntries.size()) {
-                    Log.w(TAG, "Illegal position.");
-                    return;
+        if (DEBUG_UI){
+            mListView.setAdapter(mAdapter);
+    
+            mListView.setOnItemClickListener(new ListView.OnItemClickListener() {
+                @Override
+                public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                    Log.d(TAG, "Pressed item " + position);
+                    if (position >= mEntries.size()) {
+                        Log.w(TAG, "Illegal position.");
+                        return;
+                    }
+    
+                    final DeviceEntry entry = mEntries.get(position);
+                    final UsbSerialDriver driver = entry.driver;
+                    if (driver == null) {
+                        Log.d(TAG, "No driver.");
+                        return;
+                    }
+    
+                    showConsoleActivity(driver);
+                    finish();
                 }
-
-                final DeviceEntry entry = mEntries.get(position);
-                final UsbSerialDriver driver = entry.driver;
-                if (driver == null) {
-                    Log.d(TAG, "No driver.");
-                    return;
-                }
-
-                showConsoleActivity(driver);
-                finish();
-            }
-        });
+            });
+        }
         
     }
     
