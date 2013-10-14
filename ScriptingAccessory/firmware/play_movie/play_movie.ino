@@ -38,7 +38,6 @@ void setup() {
 void loop() {
   switch (state) {
     case STATE_INIT:
-      //if (Serial.peek() != -1 ) {
       if (Serial.peek() == 0xFF ) {
         state = STATE_WRITE;
       }
@@ -55,7 +54,6 @@ void loop() {
       break;
 
     case STATE_WRITE_DONE:
-//     delay(5000);
      Serial.print(STRING_EOS);
 
       state = STATE_READ;
