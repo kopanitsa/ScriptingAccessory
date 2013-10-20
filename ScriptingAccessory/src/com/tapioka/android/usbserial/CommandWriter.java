@@ -47,9 +47,9 @@ public class CommandWriter {
     }
 
     // TODO
-    public void writeRaw(String command){
-//        stringtobyte
-//        mSerialIoManager.writeAsync(command);
+    public void writeRaw(byte command){
+        byte[] b = {command};
+        mSerialIoManager.writeAsync(b);
     }
 
 

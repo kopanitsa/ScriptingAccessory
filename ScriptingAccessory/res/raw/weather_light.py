@@ -20,18 +20,37 @@ def get_weather_forecast(area_id):
     data = json.loads(html)
     today_weather = data['forecasts'][0]['telop'].encode('utf-8')
     description = data['description']['text'].encode('utf-8')
-    ret = {"today_weather" : today_weather,
-          "description" : description
+    ret = {'today_weather' : today_weather,
+          'description' : description
           }
     return ret
 
+
+def send_command(weather):
+    extra = None
+    sunny = weather.find('x')
+    if sunny == 0:
+        print('NOT SUNNY')
+        extra = {
+            'command'   : '0',
+        }
+    else:
+        extra = {
+            'command'   : '1',
+        }
+        print('SUNNY')
+    intent = droid.makeIntent('com.tapioka.android.usbserial.IO', None, None, extra).result
+    droid.sendBroadcastIntent(intent)
+
+
 def main():
-    print("==== start ====")
+    print('==== start ====')
     response = get_weather_forecast(tokyo)
-    print(response["today_weather"])
-    droid.dialogCreateAlert("today weather", response["description"])
+    print(response['today_weather'])
+    droid.dialogCreateAlert('today weather', response['description'])
     droid.dialogShow()
-    print("==== end ====")
+    send_command(response['today_weather'])
+    print('==== end ====')
 
 if __name__ == '__main__':
     main()

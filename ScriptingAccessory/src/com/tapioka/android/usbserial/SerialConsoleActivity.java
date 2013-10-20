@@ -328,16 +328,29 @@ public class SerialConsoleActivity extends Activity {
     }
 
     public class SerialIoBroadcastReceiver extends BroadcastReceiver {
+//        // high level
+//        @Override
+//        public void onReceive(Context context, Intent intent) {
+//            Bundle extras = intent.getExtras();
+//            if (extras != null){
+//                String command = extras.getString("command");
+//                String port = extras.getString("port");
+//                String value = extras.getString("value");
+//                Log.e(TAG, commandrv + "/" + port + "/" + value);
+//                Toast.makeText(context, command + "/" + port + "/" + value, Toast.LENGTH_LONG).show();
+//                mCommandWriter.write(command,port,value);
+//            }
+//        }
+        
+        // low level
         @Override
         public void onReceive(Context context, Intent intent) {
             Bundle extras = intent.getExtras();
             if (extras != null){
-                String command = extras.getString("command");
-                String port = extras.getString("port");
-                String value = extras.getString("value");
-                Log.e(TAG, command + "/" + port + "/" + value);
-                Toast.makeText(context, command + "/" + port + "/" + value, Toast.LENGTH_LONG).show();
-                mCommandWriter.write(command,port,value);
+                byte command = extras.getByte("command");
+                Log.e(TAG, "!!!!!command:"+command);
+                Toast.makeText(context, "command:"+command, Toast.LENGTH_LONG).show();
+                mCommandWriter.writeRaw(command);
             }
         }
     }    

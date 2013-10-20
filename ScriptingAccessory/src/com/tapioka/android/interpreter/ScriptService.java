@@ -168,12 +168,9 @@ public class ScriptService extends ForegroundService {
         public void onReceive(Context context, Intent intent) {
             Bundle extras = intent.getExtras();
             if (extras != null){
-                String command = extras.getString("command");
-                String port = extras.getString("port");
-                String value = extras.getString("value");
-                Toast.makeText(context, "[SERVICE2]" + command + "/" + port + "/" + value, Toast.LENGTH_LONG).show();
+                byte command = extras.getByte("command");
                 if (mCommandWriter != null) {
-                    mCommandWriter.write(command,port,value);
+                    mCommandWriter.writeRaw(command);
                 }
             }
         }
