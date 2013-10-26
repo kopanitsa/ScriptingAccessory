@@ -22,9 +22,11 @@
 // Prints an ever-increasing counter, and writes back anything
 // it receives.
 #define STATE_INIT 0
-#define STATE_WRITE 1
-#define STATE_WRITE_DONE 2
-#define STATE_READ 3
+#define STATE_WRITE_FOR_CONNECT 1
+#define STATE_WRITE_FOR_DISCONNECT 2
+#define STATE_WRITE_DONE_FOR_CONNECT 3
+#define STATE_WRITE_DONE_FOR_DISCONNECT 4
+#define STATE_READ 5
 
 #define STRING_EOS "#_EOS_EOS_EOS_EOS_EOS_"
 #define COMMAND_START_TO_LOAD 0xFF
@@ -39,24 +41,32 @@ void loop() {
   switch (state) {
     case STATE_INIT:
       if (Serial.peek() == 0xFF ) {
-        state = STATE_WRITE;
+        state = STATE_WRITE_FOR_CONNECT;
       }
       break;
 
-    case STATE_WRITE:
+    case STATE_WRITE_FOR_CONNECT:
       Serial.println("import android,time");
       Serial.println("droid = android.Android()");
       Serial.println("droid.makeToast('Play Movie')");
-      Serial.println("droid.webViewShow('http://www.youtube.com/watch?v=pdbSLpBgQ2I', True)");
-      //Serial.println("droid.webViewShow('https://docs.google.com/file/d/0B14PZnE7DkYmck9Yc2tlcTZwTnM/edit?usp=sharing', True)");
-
-      state = STATE_WRITE_DONE;
+      Serial.println("droid.startActivityIntent(makeIntent('android.intent.action.VIEW', 'https://docs.google.com/file/d/0B14PZnE7DkYmck9Yc2tlcTZwTnM/edit?usp=sharing'))");
+      //Serial.println("droid.webViewShow('http://youtu.be/0p3vL0zuNYE', True)");
+      state = STATE_WRITE_DONE_FOR_CONNECT;
       break;
 
-    case STATE_WRITE_DONE:
-     Serial.print(STRING_EOS);
+    case STATE_WRITE_DONE_FOR_CONNECT:
+      Serial.print(STRING_EOS);
+      state = STATE_WRITE_FOR_DISCONNECT;
+      break;
 
+    case STATE_WRITE_FOR_DISCONNECT:
+      state = STATE_WRITE_DONE_FOR_DISCONNECT;
+      break;
+
+    case STATE_WRITE_DONE_FOR_DISCONNECT:
+      Serial.print(STRING_EOS);
       state = STATE_READ;
+      break;
 
     case STATE_READ:
     default:
