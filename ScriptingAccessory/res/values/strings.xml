@@ -2,7 +2,7 @@
 <resources>
     <string name="hello">Hello World!</string>
     <string name="app_name">Scripting Accessory</string>
-    <string name="loading">Dummy Script loading...</string>
+    <string name="loading">Smapon loading...</string>
     <string name="start_button">Start</string>
 
     <string name="refreshing">Refreshing...</string>
