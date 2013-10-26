@@ -26,7 +26,6 @@ import android.content.res.Resources;
 import android.os.Binder;
 import android.os.Bundle;
 import android.os.IBinder;
-import android.widget.Toast;
 
 import com.googlecode.android_scripting.AndroidProxy;
 import com.googlecode.android_scripting.BaseApplication;
@@ -45,7 +44,6 @@ import com.googlecode.android_scripting.interpreter.html.HtmlInterpreter;
 import com.googlecode.android_scripting.jsonrpc.RpcReceiverManager;
 import com.tapioka.android.R;
 import com.tapioka.android.usbserial.CommandWriter;
-import com.tapioka.android.usbserial.SerialConsoleActivity.SerialIoBroadcastReceiver;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -62,14 +60,17 @@ public class ScriptService extends ForegroundService {
 	private final static int NOTIFICATION_ID = NotificationIdFactory.create();
 	private final CountDownLatch mLatch = new CountDownLatch(1);
 	private final IBinder mBinder;
+	private Intent mStartIntent;
+	private int mStartId;
 
 	private InterpreterConfiguration mInterpreterConfiguration;
 	private RpcReceiverManager mFacadeManager;
     private AndroidProxy mProxy;
     
     //To receive intent from script
-    private SerialIoBroadcastReceiver mTestReceiver;
+    private SerialIoBroadcastReceiver mIoReceiver;
     private IntentFilter mIntentFilter;
+    private UsbBroadcastReceiver mUsbReceiver;
 
     private CommandWriter mCommandWriter;
     
@@ -99,65 +100,83 @@ public class ScriptService extends ForegroundService {
 	@Override
 	public void onStart(Intent intent, final int startId) {
 		super.onStart(intent, startId);
+		mStartIntent = intent;
+		mStartId = startId;
 		String fileName = Script.getFileName(this);
-		Interpreter interpreter = mInterpreterConfiguration
-				.getInterpreterForScript(fileName);
-		if (interpreter == null || !interpreter.isInstalled()) {
-			mLatch.countDown();
-			if (FeaturedInterpreters.isSupported(fileName)) {
-				Intent i = new Intent(this, DialogActivity.class);
-				i.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-				i.putExtra(Constants.EXTRA_SCRIPT_PATH, fileName);
-				startActivity(i);
-			} else {
-				Log.e(this, "Cannot find an interpreter for script "
-								+ fileName);
-			}
-			stopSelf(startId);
-			return;
-		}
-
-		// Copies script to internal memory.
-		fileName = InterpreterUtils.getInterpreterRoot(this).getAbsolutePath()
-				+ "/" + fileName;
-		File script = new File(fileName);
-		// TODO(raaar): Check size here!
-		if (!script.exists()) {
-			script = FileUtils.copyFromStream(fileName, getResources()
-					.openRawResource(Script.ID));
-		}
-		copyResourcesToLocal(); // Copy all resources
-
-		if (Script.getFileExtension(this)
-				.equals(HtmlInterpreter.HTML_EXTENSION)) {
-			HtmlActivityTask htmlTask = ScriptLauncher.launchHtmlScript(script,
-					this, intent, mInterpreterConfiguration);
-			mFacadeManager = htmlTask.getRpcReceiverManager();
-			mLatch.countDown();
-			stopSelf(startId);
-		} else {
-			mProxy = new AndroidProxy(this, null, true);
-			mProxy.startLocal();
-			mLatch.countDown();
-			ScriptLauncher.launchScript(script, mInterpreterConfiguration,
-					mProxy, new Runnable() {
-						@Override
-						public void run() {
-							mProxy.shutdown();
-							stopSelf(startId);
-						}
-					});
-		}
+		executeScript(fileName, false);
 		
 		// register broadcast intent receiver
-        mTestReceiver = new SerialIoBroadcastReceiver();
+        mIoReceiver = new SerialIoBroadcastReceiver();
         mIntentFilter = new IntentFilter("com.tapioka.android.usbserial.IO");
-        registerReceiver(mTestReceiver, mIntentFilter);
+        registerReceiver(mIoReceiver, mIntentFilter);
+        
+        mUsbReceiver = new UsbBroadcastReceiver();
+        IntentFilter filter = new IntentFilter("android.hardware.usb.action.USB_DEVICE_DETACHED");
+        registerReceiver(mUsbReceiver, filter);
+        mUsbReceiver.setService(this);
 	}
+	
+	private void executeScript(String fileName, boolean finishService){
+        Interpreter interpreter = mInterpreterConfiguration
+                .getInterpreterForScript(fileName);
+        if (interpreter == null || !interpreter.isInstalled()) {
+            mLatch.countDown();
+            if (FeaturedInterpreters.isSupported(fileName)) {
+                Intent i = new Intent(this, DialogActivity.class);
+                i.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                i.putExtra(Constants.EXTRA_SCRIPT_PATH, fileName);
+                startActivity(i);
+            } else {
+                Log.e(this, "Cannot find an interpreter for script "
+                                + fileName);
+            }
+            return;
+        }
+
+        // Copies script to internal memory.
+        fileName = InterpreterUtils.getInterpreterRoot(this).getAbsolutePath()
+                + "/" + fileName;
+        File script = new File(fileName);
+        // TODO(raaar): Check size here!
+        if (!script.exists()) {
+            script = FileUtils.copyFromStream(fileName, getResources()
+                    .openRawResource(Script.ID));
+        }
+        copyResourcesToLocal(); // Copy all resources
+
+        if (Script.getFileExtension(this)
+                .equals(HtmlInterpreter.HTML_EXTENSION)) {
+            HtmlActivityTask htmlTask = ScriptLauncher.launchHtmlScript(script,
+                    this, mStartIntent, mInterpreterConfiguration);
+            mFacadeManager = htmlTask.getRpcReceiverManager();
+            mLatch.countDown();
+        } else {
+            mProxy = new AndroidProxy(this, null, true);
+            mProxy.startLocal();
+            mLatch.countDown();
+            Runnable r = null;
+            if (finishService) {
+                r = new Runnable() {
+                    @Override
+                    public void run() {
+                        mProxy.shutdown();
+                        stopSelf(mStartId);
+                    }
+                };
+            }
+            ScriptLauncher.launchScript(script, mInterpreterConfiguration,
+                    mProxy, r);
+        }
+	}
+	
+    public void executeDisconnectedScript() {
+        executeScript("disconnect.py", true);
+    }
+
 	
     @Override
     public void onDestroy() {
-        unregisterReceiver(mTestReceiver);
+        unregisterReceiver(mIoReceiver);
         super.onDestroy();
     }
 
@@ -174,8 +193,7 @@ public class ScriptService extends ForegroundService {
                 }
             }
         }
-    }    
-
+    }
 
 	public RpcReceiverManager getRpcReceiverManager() throws InterruptedException {
 		mLatch.await();
@@ -260,4 +278,5 @@ public class ScriptService extends ForegroundService {
 	public void setCommandWriter(CommandWriter commandWriter) {
 	    mCommandWriter = commandWriter;
     }
+
 }
