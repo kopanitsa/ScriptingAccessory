@@ -139,8 +139,11 @@ public class ScriptService extends ForegroundService {
         File script = new File(fileName);
         // TODO(raaar): Check size here!
         if (!script.exists()) {
-            script = FileUtils.copyFromStream(fileName, getResources()
-                    .openRawResource(Script.ID));
+            //script = FileUtils.copyFromStream(fileName, getResources()
+            //        .openRawResource(Script.ID));
+            mProxy.shutdown();
+            stopSelf(mStartId);
+            return;
         }
         copyResourcesToLocal(); // Copy all resources
 

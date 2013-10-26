@@ -90,6 +90,13 @@ public class SerialConsoleActivity extends Activity {
     private SerialIoBroadcastReceiver mTestReceiver;
     private IntentFilter mIntentFilter;
     
+    private enum SavingStatus {
+        savingForConnect,
+        savingForDisconnect,
+        savingDone
+    };
+    private SavingStatus mSavingStatus;
+    
     private final SerialInputOutputManager.Listener mListener =
             new SerialInputOutputManager.Listener() {
 
@@ -105,7 +112,7 @@ public class SerialConsoleActivity extends Activity {
                 public void run() {
                     Log.v(TAG, HexDump.dumpHexString(data));
                     SerialConsoleActivity.this.updateReceivedData(data);
-                    if (!SerialConsoleActivity.this.saveReceivedData(data)) {
+                    if (SavingStatus.savingDone == SerialConsoleActivity.this.saveReceivedData(data)) {
                     	SerialConsoleActivity.this.startService();
                     }
                 }
@@ -147,7 +154,8 @@ public class SerialConsoleActivity extends Activity {
 //                }
 //            });
         } else {
-            deleteFile("script.py"); // Delete script.py
+            deleteFile("script.py");
+            deleteFile("disconnect.py");
         }
         mTestReceiver = new SerialIoBroadcastReceiver();
         mIntentFilter = new IntentFilter("com.tapioka.android.usbserial.IO");
@@ -205,6 +213,7 @@ public class SerialConsoleActivity extends Activity {
         
         // send start command to Arduino.
         // When Arduino get the command (serial_test2.ino), Arduino start to send script.
+        mSavingStatus = SavingStatus.savingForConnect;
         byte[] start = {CommandWriter.START_TO_SEND_SCRIPT};
         mSerialIoManager.writeAsync(start);
     }
@@ -239,20 +248,28 @@ public class SerialConsoleActivity extends Activity {
         }
     }
 
-    private boolean saveReceivedData(byte[] data) {
-    	boolean saving = false;
-        final String stringData = new String(data);
+    private SavingStatus saveReceivedData(byte[] data) {
+    	final String stringData = new String(data);
 
         if (stringData.indexOf(STRING_EOS) != -1) {
         	Log.d(TAG, "Receive EOS");
-        	saving = false;
+            if (SavingStatus.savingForConnect == mSavingStatus){
+                mSavingStatus = SavingStatus.savingForDisconnect;
+        	} else if (SavingStatus.savingForDisconnect == mSavingStatus){
+                mSavingStatus = SavingStatus.savingDone;
+        	}
         } else {
 	    	PrintWriter pw = null;
-	    	saving = true;
+	    	String scriptName = null;
+            if (SavingStatus.savingForConnect == mSavingStatus){
+                scriptName = "script.py";
+            } else if (SavingStatus.savingForDisconnect == mSavingStatus){
+                scriptName = "disconnect.py";
+            }
 	        try {
 	            pw = new PrintWriter(
 	            		new OutputStreamWriter(
-	            				openFileOutput("script.py",MODE_APPEND)));
+	            				openFileOutput(scriptName,MODE_APPEND)));
 	
 	            pw.print(stringData);
 	            pw.close();
@@ -265,7 +282,7 @@ public class SerialConsoleActivity extends Activity {
 	            }
 	        }
         }
-        return saving;
+        return mSavingStatus;
     }
 
     private void startService(){
