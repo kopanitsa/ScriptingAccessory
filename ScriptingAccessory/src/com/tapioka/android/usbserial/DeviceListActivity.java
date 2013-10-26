@@ -59,6 +59,7 @@ import com.tapioka.android.interpreter.ScriptService.LocalBinder;
 import com.tapioka.android.usbserial.DeviceListActivity;
 
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -79,6 +80,7 @@ public class DeviceListActivity extends Activity {
     
     private static final int MESSAGE_REFRESH = 101;
     private static final long REFRESH_TIMEOUT_MILLIS = 5000;
+    private static final int ARDUINO_MICRO_VID = 32823;
 
     private final Handler mHandler = new Handler() {
         @Override
@@ -205,6 +207,7 @@ public class DeviceListActivity extends Activity {
             @Override
             protected List<DeviceEntry> doInBackground(Void... params) {
                 Log.d(TAG, "Refreshing device list ...");
+
                 SystemClock.sleep(1000);
                 final List<DeviceEntry> result = new ArrayList<DeviceEntry>();
                 for (final UsbDevice device : mUsbManager.getDeviceList().values()) {
@@ -217,9 +220,14 @@ public class DeviceListActivity extends Activity {
                     } else {
                         for (UsbSerialDriver driver : drivers) {
                             Log.d(TAG, "  + " + driver);
+                            try {
+                                driver.setDTR(true);
+                            } catch (IOException e) {
+                                e.printStackTrace();
+                            }
                             result.add(new DeviceEntry(device, driver));
                             // start to load script automatically when Android find Arduino.
-                            startConnectionIfAvailable(driver);
+                            startConnectionIfAvailable(device, driver);
                         }
                     }
                 }
@@ -238,14 +246,23 @@ public class DeviceListActivity extends Activity {
             }
 
             // start to load script automatically when Android find arduino.
-            private void startConnectionIfAvailable(UsbSerialDriver driver){
-                if (driver.getClass().getSimpleName() != null){
+            private void startConnectionIfAvailable(UsbDevice device, UsbSerialDriver driver){
+                if (driver.getClass().getSimpleName() != null || detectArduinoMicro(device)){
                     showConsoleActivity(driver);
                     finish();
                 }
             }
 
         }.execute((Void) null);
+    }
+    
+    private boolean detectArduinoMicro(UsbDevice device){
+        boolean isDetected = false;
+        int vid = device.getVendorId();
+        if (ARDUINO_MICRO_VID == vid){
+            isDetected = true;
+        }
+        return isDetected;
     }
 
     private void showProgressBar() {

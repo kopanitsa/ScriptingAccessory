@@ -5,7 +5,13 @@
 
     <!-- 0x2341 / Arduino -->
     <usb-device vendor-id="9025" />
+    
+    <!-- 0x8037 / 0x2341 Arduino micro -->
+    <usb-device vendor-id="32823" product-id="9025" />
 
+    <!-- 0x8037 / 0x2341 Arduino micro -->
+    <usb-device vendor-id="32823" product-id="9025" />    
+    
     <!-- 0x16C0 / 0x0483: Teensyduino  -->
     <usb-device vendor-id="5824" product-id="1155" />
 
