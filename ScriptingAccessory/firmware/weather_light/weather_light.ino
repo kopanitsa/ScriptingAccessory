@@ -28,7 +28,7 @@
 #define STATE_WRITE_DONE_FOR_DISCONNECT 4
 #define STATE_READ 5
 
-#define STRING_EOS "#_EOS_EOS_EOS_EOS_EOS_"
+#define STRING_EOS "#_EOS_"
 #define COMMAND_START_TO_LOAD 0xFF
 
 #define LED_RED 2
