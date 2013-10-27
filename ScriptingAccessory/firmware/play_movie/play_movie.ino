@@ -49,8 +49,7 @@ void loop() {
       Serial.println("import android,time");
       Serial.println("droid = android.Android()");
       Serial.println("droid.makeToast('Play Movie')");
-      Serial.println("droid.startActivityIntent(makeIntent('android.intent.action.VIEW', 'https://docs.google.com/file/d/0B14PZnE7DkYmck9Yc2tlcTZwTnM/edit?usp=sharing'))");
-      //Serial.println("droid.webViewShow('http://youtu.be/0p3vL0zuNYE', True)");
+      Serial.println("droid.startActivityIntent(droid.makeIntent('android.intent.action.VIEW', 'https://docs.google.com/file/d/0B14PZnE7DkYmck9Yc2tlcTZwTnM/edit?usp=sharing').result)");
       state = STATE_WRITE_DONE_FOR_CONNECT;
       break;
 
