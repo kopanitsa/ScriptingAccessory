@@ -28,7 +28,7 @@
 #define STATE_WRITE_DONE_FOR_DISCONNECT 4
 #define STATE_READ 5
 
-#define STRING_EOS "#_EOS_"
+#define STRING_EOS "#_EOS_EOS_EOS_EOS_EOS_"
 #define COMMAND_START_TO_LOAD 0xFF
 
 #define LED_RED 2
@@ -113,9 +113,9 @@ void loop() {
       break;
 
     case STATE_WRITE_FOR_DISCONNECT:
-      //Serial.println("import android,time");
-      //Serial.println("droid = android.Android()");
-      //Serial.println("droid.makeToast('Hello, disconnect')");
+      Serial.println("import android,time");
+      Serial.println("droid = android.Android()");
+      Serial.println("droid.makeToast('disconnect')");
       state = STATE_WRITE_DONE_FOR_DISCONNECT;
       break;
 
