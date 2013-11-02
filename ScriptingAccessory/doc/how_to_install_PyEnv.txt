@@ -1,0 +1,15 @@
+1.SL4Aをインストール
+　https://code.google.com/p/android-scripting/
+　バーコードをクリックするとダウンロード開始
+
+2. Python for Androidをインストール
+　SL4Aを起動-> メニューからView -> Interpreter -> メニューからadd -> Python -> インストール
+
+3. tweepyをインストール
+　https://drive.google.com/file/d/0B14PZnE7DkYma0hkOGdXUmpFVnc/edit?usp=sharing
+　を/sdcard/Downloadにダウンロード
+　電話に入れてPython for AndroidのImport ModuleでInstall
+
+
+参考：
+http://www.kkaneko.com/rinkou/js/sl4a.html 
