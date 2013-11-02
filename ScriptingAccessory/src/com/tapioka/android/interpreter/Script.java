@@ -3,16 +3,10 @@
 package com.tapioka.android.interpreter;
 
 
-import com.tapioka.android.R;
-
 import android.content.Context;
 //import android.content.res.Resources;
 
 public class Script {
-
-    // load file name is described here
-    // public final static int ID = R.raw.script;
-    public final static int ID = R.raw.weather_light;
 
   public static String sFileName;
 

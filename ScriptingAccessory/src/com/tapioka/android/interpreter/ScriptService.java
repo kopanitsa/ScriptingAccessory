@@ -145,7 +145,6 @@ public class ScriptService extends ForegroundService {
             stopSelf(mStartId);
             return;
         }
-        copyResourcesToLocal(); // Copy all resources
 
         if (Script.getFileExtension(this)
                 .equals(HtmlInterpreter.HTML_EXTENSION)) {
@@ -247,37 +246,6 @@ public class ScriptService extends ForegroundService {
 		return false;
 	}
 
-	private void copyResourcesToLocal() {
-		String name, sFileName;
-		InputStream content;
-		R.raw a = new R.raw();
-		java.lang.reflect.Field[] t = R.raw.class.getFields();
-		Resources resources = getResources();
-		for (int i = 0; i < t.length; i++) {
-			try {
-				name = resources.getText(t[i].getInt(a)).toString();
-				sFileName = name.substring(name.lastIndexOf('/') + 1, name
-						.length());
-				content = getResources().openRawResource(t[i].getInt(a));
-
-				// Copies script to internal memory only if changes were made
-				sFileName = InterpreterUtils.getInterpreterRoot(this)
-						.getAbsolutePath()
-						+ "/" + sFileName;
-				if (needsToBeUpdated(sFileName, content)) {
-					Log.d("Copying from stream " + sFileName);
-					content.reset();
-					FileUtils.copyFromStream(sFileName, content);
-				}
-				FileUtils.chmod(new File(sFileName), 0755);
-			} catch (Exception e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-		}
-	}
-
-    
 	public void setCommandWriter(CommandWriter commandWriter) {
 	    mCommandWriter = commandWriter;
     }
