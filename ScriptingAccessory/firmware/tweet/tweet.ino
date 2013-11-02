@@ -55,8 +55,8 @@ void loop() {
       Serial.println("access_secret = 'tPHDQKT7GQ2Erm2MGpnvxqsIfbrcS5tlNpSM2LhNQ2xJM'");
       Serial.println("auth = tweepy.OAuthHandler(consumer_key, consumer_secret)");
       Serial.println("auth.set_access_token(access_key, access_secret)");
-      Serial.println("api = tweepy.API(auth_handler=auth)");
-      Serial.println("api.update_status('Connected')");
+      Serial.println("tweet = tweepy.API(auth_handler=auth)");
+      Serial.println("tweet.update_status('Connected to smapon #smapon\\n' + time.ctime())");
       state = STATE_WRITE_DONE_FOR_CONNECT;
       break;
 
@@ -75,8 +75,8 @@ void loop() {
       Serial.println("access_secret = 'tPHDQKT7GQ2Erm2MGpnvxqsIfbrcS5tlNpSM2LhNQ2xJM'");
       Serial.println("auth = tweepy.OAuthHandler(consumer_key, consumer_secret)");
       Serial.println("auth.set_access_token(access_key, access_secret)");
-      Serial.println("api = tweepy.API(auth_handler=auth)");
-      Serial.println("api.update_status('Disconnected')");
+      Serial.println("tweet = tweepy.API(auth_handler=auth)");
+      Serial.println("tweet.update_status('Disconnected from smapon #smapon\\n' + time.ctime())");
       state = STATE_WRITE_DONE_FOR_DISCONNECT;
       break;
 
